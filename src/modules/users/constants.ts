@@ -1,0 +1,8 @@
+export const USER_TOKEN_EXPIRY = 86400;
+
+export const EMAIL_VERIFICATION_EXPIRY = 300; // in seconds
+
+export enum TokenActionTypes {
+  EMAIL_VERIFICATION = 'EMAIL_VERIFICATIONS',
+  PASSWORD_RECOVERY = 'PASSWORD_RECOVERY',
+}

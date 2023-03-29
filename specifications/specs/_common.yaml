@@ -1,0 +1,155 @@
+info:
+  description: Common models to API specs
+  version: '1.0'
+  title: Common Models
+
+definitions:
+  UUID:
+    type: string
+    example: 'd290f1ee-6c54-4b01-90e6-d701748f0851'
+    format: uuid
+
+  StatusDto:
+    type: object
+    description: Status data, check additional message field
+    required:
+      - success
+    properties:
+      success:
+        type: boolean
+        example: true
+      message:
+        type: string
+
+  Timestamp:
+    type: string
+    format: date-time
+    readOnly: true
+    example: 2018-12-01T02:15:00
+  
+  PositiveInteger:
+    type: integer
+    format: int32
+    minimum: 0
+
+  Paging:
+    type: object
+    discriminator: name
+    required:
+      - name
+    properties:
+      name:
+        type: string
+        description: Descriptive name for the list
+      size:
+        $ref: '#/definitions/PositiveInteger'
+        description: 'Number of items returned'
+      totalItems:
+        $ref: '#/definitions/PositiveInteger'
+        description: 'Total number of items available'
+      nextPage:
+        $ref: '#/definitions/PositiveInteger'
+        description: 'Next page number'
+      previousPage:
+        $ref: '#/definitions/PositiveInteger'
+        description: 'Previous page number'
+
+  Metadata:
+    type: object
+    required:
+      - name
+      - value
+    properties:
+      name:
+        type: string
+        description: name of metadata
+        example: meta_name
+      value:
+        type: string
+        description: any value to represent
+
+  JobDto:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        readOnly: true
+      status:
+        type: string
+        readOnly: true
+        enum:
+          - ACTIVE
+          - PAUSED
+          - DRAFTS
+          - CLOSED
+      title:
+        type: string
+      userId:
+        type: string  
+      description:
+        type: string
+      jobType:
+        type: string
+        enum:
+          - FULL_TIME
+          - PART_TIME
+          - CONTRACT
+      yearsOfExperience:
+        type: string
+      skills:
+        type: array
+        items: 
+          type: string
+      qualifications:
+        type: array
+        items:
+          type: string
+          enum:
+            - BSC
+            - PHD
+      preferredLocation:
+        type: array
+        items:
+          type: string
+      jobLocation:
+        type: array
+        items:
+          type: string
+          enum:
+            - OFFICE
+            - REMOTE
+            - HYBRID
+      salary:
+        type: object
+        properties:
+          currency:
+            type: string
+            example: NGN
+          rangeFrom:
+            type: number
+          rangeTo:
+            type: number
+          benefits:
+            type: string
+            enum:
+              - EQUITY
+              - STOCK_OPTIONS
+      publishedAt:
+        $ref: '_common.yaml#/definitions/Timestamp'
+      closedAt:
+        $ref: '_common.yaml#/definitions/Timestamp'
+      deadlineAt:
+        $ref: '_common.yaml#/definitions/Timestamp'
+      createdAt:
+        $ref: '_common.yaml#/definitions/Timestamp'
+      updatedAt:
+        $ref: '_common.yaml#/definitions/Timestamp'
+
+  AmountFormat:
+    type: object
+    properties:
+      value:
+        type: string
+      currency:
+        type: string

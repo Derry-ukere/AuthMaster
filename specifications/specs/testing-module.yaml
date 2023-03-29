@@ -1,0 +1,502 @@
+swagger: '2.0'
+
+info:
+  version: 1.0.0
+  title: DistinctAI - Testing
+  description: |
+    **Errors**
+
+    Uses conventional HTTP response codes to indicate success or failure. In general, codes in the `2xx` range indicate success. Codes in the `4xx` range indicate an error (e.g. required parameters, failed request etc.). Codes int he `5xx` range indicate a server error occurred.
+  
+  contact:
+    name: DistinctAI
+    email: developers@distinct.ai
+  
+  license:
+    name: Proprietary
+
+host: dev-api.distinct.ai
+basePath: /testing
+schemes:
+  - http
+  - https
+
+securityDefinitions:
+  authToken:
+    type: apiKey
+    name: x-auth-token
+    in: header
+
+tags:
+  - name: user
+    description: User related endpoints
+  - name: public
+    description: Publicly available endpoints
+
+paths:
+  /create:
+    post:
+      tags:
+        - user
+      security:
+        - authToken: []
+      summary: Create a test
+      operationId: createTest
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/TestDto'
+      responses:
+        200:
+          description: Request successful
+          schema:
+            $ref: '#/definitions/TestDto'
+  /tests:
+    get:
+      tags:
+        - user
+      security:
+        - authToken: []
+      summary: Get available tests
+      operationId: getTestsList
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: text
+          required: false
+          type: string
+      responses:
+        200:
+          description: Request successful
+          schema:
+            $ref: '#/definitions/TestListDto'
+
+    put:
+      tags:
+        - user
+      security:
+        - authToken: []
+      summary: Adds a test
+      operationId: addTest
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/AddTestQuestionDto'
+      responses:
+        200:
+          description: Request successul
+          schema:
+            $ref: '#/definitions/TestDto'
+
+  /tests/{id}/results:
+    parameters:
+      - in: path
+        name: id
+        description: Test Id
+        required: true
+        type: string
+        format: uuid
+
+    get:
+      tags:
+        - user
+      security:
+        - authToken: []
+      summary: Get test results
+      operationId: getTestResults
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Request successful
+          schema:
+            $ref: '#/definitions/TestResultListDto'
+
+  /tests/attach:
+    get:
+      tags:
+        - user
+      security:
+        - authToken: []
+      summary: Get attached tests
+      operationId: getAttachedTests
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: resource
+          required: true
+          type: string
+      responses:
+        200:
+          description: Request successful
+          schema:
+            $ref: '#/definitions/TestListDto'
+
+    post:
+      tags:
+        - user
+      security:
+        - authToken: []
+      operationId: bindUnbindTestToResource
+      summary: Bind/Unbind a test to a resource
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/BindTestRequestDto'
+      responses:
+        200:
+          description: Request successful
+          schema:
+            $ref: '_common.yaml#/definitions/StatusDto'
+
+  /tests/scheduled/details:
+    get:
+      tags:
+        - user
+      security:
+        - authToken: []
+      summary: Get user's tests
+      operationId: getUserTests
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Request successful
+          schema:
+            $ref: '#/definitions/ScheduledTestDetailsDto'
+  
+  /tests/{id}/start:
+    parameters:
+      - in: path
+        name: id
+        description: Test Id
+        required: true
+        type: string
+        format: uuid
+
+    post:
+      tags:
+        - user
+      security:
+        - authToken: []
+      operationId: startTest
+      summary: Start a test
+      responses:
+        200:
+          description: Request successful
+          schema:
+            $ref: '#/definitions/TestStartedResultDto'
+  
+  /tests/{id}/end:
+    parameters:
+      - in: path
+        name: id
+        description: Test Id
+        required: true
+        type: string
+        format: uuid
+
+    post:
+      tags:
+        - user
+      security:
+        - authToken: []
+      operationId: endTest
+      summary: Ends a test
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/EndTestRequestDto'
+      responses:
+        200:
+          description: Request successful
+          schema:
+            $ref: '#/definitions/TestResultDto'
+
+  /tests/results/{id}/progress:
+    parameters:
+      - in: path
+        name: id
+        description: Result Id
+        required: true
+        type: string
+        format: uuid
+
+    post:
+      tags:
+        - user
+      security:
+        - authToken: []
+      operationId: updateTestProgress
+      summary: Update test progress
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/TestResultUpdateDto'
+      responses:
+        200:
+          description: Request successful
+          schema:
+            $ref: '_common.yaml#/definitions/StatusDto'
+
+  /proctor:
+    post:
+      tags:
+        - user
+      security:
+        - authToken: []
+      operationId: addProctorEvidence
+      summary: Adds proctor evidence
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/ProctorEvidenceReqDto'
+      responses:
+        201:
+          description: Request successful
+          schema:
+            $ref: '_common.yaml#/definitions/StatusDto'
+
+definitions:
+  TestDto:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+      title:
+        type: string
+      description:
+        type: string
+      instructions:
+        type: string
+      duration:
+        type: object
+        properties:
+          value:
+            type: number
+            example: 30
+          type:
+            type: string
+            enum:
+              - MINUTES
+              - HOURS
+      createdAt:
+        $ref: '_common.yaml#/definitions/Timestamp'
+      updatedAt:
+        $ref: '_common.yaml#/definitions/Timestamp'
+
+  TestListDto:
+    allOf:
+      - $ref: '_common.yaml#/definitions/Paging'
+      - properties:
+          records:
+            type: array
+            items:
+              $ref: '#/definitions/TestDto'
+
+  TestQuestionDto:
+    type: object
+    required:
+      - type
+      - question
+    properties:
+      id:
+        type: string
+        format: uuid
+      type:
+        type: string
+        enum:
+          - OBJECTIVE
+      question:
+        type: string
+      options:
+        type: array
+        items: 
+          type: object
+          properties:
+            text:
+              type: string
+            value:
+              type: string
+      answers:
+        type: array
+        items: 
+          type: string
+
+  AddTestQuestionDto:
+    type: object
+    properties: 
+      questions:
+        type: array
+        items: 
+          $ref: '#/definitions/TestQuestionDto'
+
+  BindTestRequestDto:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+      reference:
+        type: string
+        format: uuid
+      state:
+        type: string
+        enum:
+          - BIND
+          - UNBIND
+
+  TestStatusDto:
+    type: string
+    enum:
+      - IN_PROGRESS
+      - COMPLETED
+
+  TestStartedResultDto:
+    type: object
+    properties:
+      resultId:
+        type: string
+        format: uuid
+      status:
+        $ref: '#/definitions/TestStatusDto'
+      questions:
+        type: array
+        items: 
+          $ref: '#/definitions/TestQuestionDto'
+      expiresIn:
+        type: number
+        example: 3600
+      createdAt:
+        $ref: '_common.yaml#/definitions/Timestamp'
+      updatedAt:
+        $ref: '_common.yaml#/definitions/Timestamp'
+
+  TestResultUpdateDto:
+    type: object
+    properties:
+      question:
+        type: object
+        properties:
+          id:
+            type: string
+          answer:
+            type: string
+
+  ScheduledTestDetailsDto:
+    type: object
+    properties:
+      tests:
+        type: array
+        items: 
+          $ref: '#/definitions/TestDto'
+
+  EndTestRequestDto:
+    type: object
+    properties:
+      resultId:
+        type: string
+        description: Result ID
+
+  ProctorEvidenceReqDto:
+    type: object
+    properties:
+      resultId:
+        type: string
+      file:
+        $ref: '#/definitions/ProctorFileDto'
+
+  ProctorFileDto:
+    type: object
+    properties:
+      type:
+        type: string
+        enum:
+          - AUDIO
+          - IMAGE
+      fileKey:
+        type: string
+      fileName:
+        type: string
+        readOnly: true
+      url:
+        type: string
+      createdAt:
+        $ref: '_common.yaml#/definitions/Timestamp'
+      updatedAt:
+        $ref: '_common.yaml#/definitions/Timestamp'
+
+  TestResultDto:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+      testResults:
+        properties:
+          id:
+            type: string
+            format: uuid
+          testId:
+            type: string
+            format: uuid
+          jobId:
+            type: string
+            format: uuid
+          applicationId:
+            type: string
+            format: uuid
+          score:
+            type: number
+          result:
+            type: object
+            properties:
+              passed:
+                type: number
+              total:
+                type: number
+          status:
+            $ref: '#/definitions/TestStatusDto'
+          completedAt:
+            $ref: '_common.yaml#/definitions/Timestamp'
+          createdAt:
+            $ref: '_common.yaml#/definitions/Timestamp'
+          updatedAt:
+            $ref: '_common.yaml#/definitions/Timestamp'
+          proctor:
+            type: object
+            properties: 
+              file:
+                $ref: '#/definitions/ProctorFileDto'
+
+  TestResultListDto:
+    allOf:
+      - $ref: '_common.yaml#/definitions/Paging'
+      - properties:
+          records:
+            type: array
+            items:
+              $ref: '#/definitions/TestResultDto'

@@ -1,0 +1,151 @@
+swagger: '2.0'
+
+info:
+  version: 1.0.0
+  title: DistinctAI - Applicants
+  description: |
+    **Errors**
+
+    Uses conventional HTTP response codes to indicate success or failure. In general, codes in the `2xx` range indicate success. Codes in the `4xx` range indicate an error (e.g. required parameters, failed request etc.). Codes int he `5xx` range indicate a server error occurred.
+  
+  contact:
+    name: DistinctAI
+    email: developers@distinct.ai
+  
+  license:
+    name: Proprietary
+
+host: dev-api.distinct.ai
+basePath: /applicants
+schemes:
+  - http
+  - https
+
+securityDefinitions:
+  authToken:
+    type: apiKey
+    name: x-auth-token
+    in: header
+
+tags:
+  - name: user
+    description: User related endpoints
+  - name: public
+    description: Publicly available endpoints
+
+paths:
+  /apply:
+    post:
+      tags:
+        - user
+      security:
+        - authToken: []
+      operationId: submitApplication
+      summary: Submit an application
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/ApplicationDto'
+      responses:
+        200:
+          description: Request successful
+          schema:
+            $ref: '#/definitions/ApplicationDto'
+
+  /all:
+    get:
+      tags:
+        - user
+      security:
+        - authToken: []
+      summary: Get list of applications
+      operationId: getApplications
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: status
+          required: false
+          type: string
+      responses:
+        200:
+          description: Request successful
+          schema:
+            $ref: '#/definitions/ApplicantListDto'
+
+  /all/{id}:
+    parameters:
+      - in: path
+        name: id
+        description: Application Id
+        required: true
+        type: string
+        format: uuid
+
+    post:
+      tags:
+        - user
+      security:
+        - authToken: []
+      operationId: updateApplicant
+      summary: Update an applicant's application
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/ApplicantUpdateRequestDto'
+      responses:
+        200:
+          description: Request successful
+          schema:
+            $ref: '_common.yaml#/definitions/StatusDto'
+
+definitions:
+  ApplicationDto:
+    type: object
+    required:
+      - jobId
+    properties:
+      id:
+        type: string
+        format: uuid
+        readOnly: true
+      status:
+        type: string
+        readOnly: true
+        enum:
+          - PENDING
+          - ACCEPTED
+          - REJECTED
+      jobId:
+        type: string
+        format: uuid
+      job:
+        $ref: '_common.yaml#/definitions/JobDto'
+      metadata:
+        $ref: '_common.yaml#/definitions/Metadata'
+      createdAt:
+        $ref: '_common.yaml#/definitions/Timestamp'
+      updatedAt:
+        $ref: '_common.yaml#/definitions/Timestamp'
+
+  ApplicantListDto:
+    allOf:
+      - $ref: '_common.yaml#/definitions/Paging'
+      - properties:
+          records:
+            type: array
+            items:
+              $ref: '#/definitions/ApplicationDto'
+
+  ApplicantUpdateRequestDto:
+    type: object
+    properties: 
+      status:
+        type: string
+        enum:
+          - ACCEPT
+          - REJECT
